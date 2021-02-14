@@ -1,0 +1,25 @@
+<div>
+  <button mat-raised-button color="primary" [routerLink]="['/createTable']">
+    Tisch erstellen
+  </button>
+</div>
+<mat-selection-list
+  #tableList
+  [multiple]="false"
+  (selectionChange)="onTableSelected($event)"
+>
+  <mat-list-option *ngFor="let table of tables" [value]="table">
+    <h3 matLine>{{ table.name }}</h3>
+    <p matLine>
+      <span> Max: {{ table.maxplayers }} </span>
+      <span>Min: {{ table.minplayers }} </span>
+    </p>
+    <p matLine>
+      <span>Spieler: </span>
+      <span *ngFor="let player of table.players">{{ player.name }} </span>
+    </p>
+    <p matLine>
+      <span *ngIf="table.locked">GESPERRT</span>
+    </p>
+  </mat-list-option>
+</mat-selection-list>

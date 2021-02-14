@@ -1,0 +1,14 @@
+<button mat-raised-button color="primary" (click)="leaveTable()">
+  Tisch verlassen
+</button>
+<mat-card
+  >{{ table.name }} - Spieler:
+  <span *ngFor="let player of table.players">{{ player.name }}, </span>
+</mat-card>
+
+<mat-grid-list cols="5" rowHeight="1:1">
+  <mat-grid-tile *ngFor="let image of images">
+    <img [src]="image.src" />
+  </mat-grid-tile>
+</mat-grid-list>
+<button mat-raised-button color="accent" (click)="dice()">Würfeln!</button>

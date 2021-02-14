@@ -1,0 +1,33 @@
+<div class="start-page">
+  <form class="start-form" [formGroup]="form">
+    <mat-form-field class="start-full-width">
+      <mat-label>Name eingeben</mat-label>
+      <input
+        matInput
+        placeholder="Name"
+        autocomplete="off"
+        formControlName="userName"
+      />
+    </mat-form-field>
+    <mat-form-field class="start-full-width">
+      <mat-label>Pw</mat-label>
+      <input matInput type="password" autocomplete="off" formControlName="pw" />
+    </mat-form-field>
+  </form>
+  <button
+    mat-raised-button
+    color="primary"
+    class="firstButton"
+    (click)="loginBtnPressed()"
+  >
+    Los geht's
+  </button>
+  <button
+    mat-raised-button
+    color="accent"
+    class="secondButton"
+    (click)="register()"
+  >
+    Neuer Account
+  </button>
+</div>

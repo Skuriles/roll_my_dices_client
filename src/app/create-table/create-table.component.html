@@ -1,0 +1,34 @@
+<div class="start-page">
+  <form class="start-form" [formGroup]="form">
+    <mat-form-field class="start-full-width">
+      <mat-label>Name eingeben</mat-label>
+      <input
+        matInput
+        placeholder="Name"
+        autocomplete="off"
+        formControlName="name"
+      />
+    </mat-form-field>
+    <mat-form-field class="start-full-width">
+      <mat-label>Max. Anzahl Spieler eingeben</mat-label>
+      <input
+        type="number"
+        matInput
+        autocomplete="off"
+        formControlName="maxPlayers"
+      />
+    </mat-form-field>
+    <mat-form-field class="start-full-width">
+      <mat-label>Mix. Anzahl Spieler eingeben</mat-label>
+      <input
+        type="number"
+        matInput
+        autocomplete="off"
+        formControlName="minPlayers"
+      />
+    </mat-form-field>
+  </form>
+  <button mat-raised-button color="primary" (click)="createTable()">
+    Speichern
+  </button>
+</div>
