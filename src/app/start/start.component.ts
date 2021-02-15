@@ -1,8 +1,10 @@
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
+import { WsMessage } from "../classes/wsMessage";
 import { HttpService } from "../http.service";
 import { ToolService } from "../tool.service";
+import { WebsocketService } from "../websocket.service";
 
 @Component({
   selector: "app-start",
@@ -16,7 +18,8 @@ export class StartComponent implements OnInit {
     private formBuilder: FormBuilder,
     private router: Router,
     private httpService: HttpService,
-    private toolService: ToolService
+    private toolService: ToolService,
+    private wsService: WebsocketService
   ) {}
 
   ngOnInit(): void {
@@ -80,6 +83,7 @@ export class StartComponent implements OnInit {
   public login(id: string): void {
     if (id) {
       sessionStorage.setItem("id", id);
+      this.wsService.sendMessage(new WsMessage(id, "register"));
       this.router.navigate(["/select"]);
     }
   }

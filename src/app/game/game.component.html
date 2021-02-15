@@ -12,3 +12,11 @@
   </mat-grid-tile>
 </mat-grid-list>
 <button mat-raised-button color="accent" (click)="dice()">Würfeln!</button>
+
+<div class="player-container">
+  <mat-grid-list cols="{{ table.players.length }}" rowHeight="250">
+    <mat-grid-tile *ngFor="let player of table.players">
+      <span>{{ player.name }}, </span>
+    </mat-grid-tile>
+  </mat-grid-list>
+</div>

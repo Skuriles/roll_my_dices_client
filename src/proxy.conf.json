@@ -3,5 +3,10 @@
     "target": "http://localhost:63555",
     "secure": false,
     "ws": true
+  },
+  "/ws": {
+    "target": "http://localhost:63555",
+    "ws": true,
+    "logLevel": "debug"
   }
 }
