@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { WsMessage } from "./classes/wsMessage";
 import { WebSocketSubject } from "rxjs/webSocket";
 import { ToolService } from "./tool.service";
+import { Subject } from "rxjs";
 
 @Injectable({
   providedIn: "root",
@@ -15,6 +16,10 @@ export class WebsocketService {
 
   private socket$: WebSocketSubject<WsMessage>;
   private pingTimeout: any;
+  public playerResult = new Subject<string>();
+  public playerResult$ = this.playerResult.asObservable();
+  public newPlayer = new Subject<string[]>();
+  public newPlayer$ = this.newPlayer.asObservable();
 
   constructor() {}
 
@@ -40,20 +45,23 @@ export class WebsocketService {
     if (message.sender !== "NS") {
       return;
     }
+    if (message.content === "ping") {
+      this.heartbeat();
+    }
     const id = sessionStorage.getItem("id");
     if (!id) {
       return;
     }
     switch (message.content) {
-      case "ping":
-        this.heartbeat();
-        break;
       case "connected":
-        this.sendMessage(new WsMessage(id, "register"));
+        this.sendMessage(new WsMessage("register"));
         this.heartbeat();
         break;
       case "playerResult":
-        console.log(message.params);
+        this.handlePlayerResult(message.params[0]);
+        break;
+      case "newPlayer":
+        this.handleNewPlayer(message.params);
         break;
       default:
         break;
@@ -69,10 +77,19 @@ export class WebsocketService {
   }
 
   private heartbeat(): void {
+    this.sendMessage(new WsMessage("pong"));
     clearTimeout(this.pingTimeout);
 
     this.pingTimeout = setTimeout(() => {
       this.close();
     }, 30000 + 1000);
+  }
+
+  private handlePlayerResult(playerId: string): void {
+    this.playerResult.next(playerId);
+  }
+
+  private handleNewPlayer(playerAndTableId: string[]): void {
+    this.newPlayer.next(playerAndTableId);
   }
 }

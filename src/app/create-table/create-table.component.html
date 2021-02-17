@@ -27,6 +27,15 @@
         formControlName="minPlayers"
       />
     </mat-form-field>
+    <mat-form-field class="start-full-width">
+      <mat-label>Anzahl Würfel pro Spieler eingeben</mat-label>
+      <input
+        type="number"
+        matInput
+        autocomplete="off"
+        formControlName="diceCount"
+      />
+    </mat-form-field>
   </form>
   <button mat-raised-button color="primary" (click)="createTable()">
     Speichern

@@ -1,5 +1,8 @@
 import { Component, OnInit } from "@angular/core";
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
+import { Subscription } from "rxjs";
+import { Game } from "../classes/game";
 import { DiceImage } from "../classes/image";
 import { Table } from "../classes/table";
 import { WsMessage } from "../classes/wsMessage";
@@ -15,6 +18,8 @@ import { WebsocketService } from "../websocket.service";
 })
 export class GameComponent implements OnInit {
   public images: DiceImage[] = [];
+  public form: FormGroup;
+  public game: Game;
   public diceImages = [
     "../../assets/images/1.png",
     "../../assets/images/2.png",
@@ -24,16 +29,26 @@ export class GameComponent implements OnInit {
     "../../assets/images/6.png",
   ];
   public table: Table;
+  public myId: string | null;
+  public playerResult: Subscription;
+  public newPlayer: Subscription;
+
   constructor(
     private tableService: TableService,
     private router: Router,
     private httpService: HttpService,
     private wsService: WebsocketService,
-    private toolService: ToolService
+    private toolService: ToolService,
+    private formBuilder: FormBuilder
   ) {}
 
   ngOnInit(): void {
-    this.table = new Table("", 0, 0);
+    this.form = this.formBuilder.group({
+      dice: [0, [Validators.required]],
+      count: [0, [Validators.required]],
+    });
+    this.myId = sessionStorage.getItem("id");
+    this.table = new Table("", 0, 0, 0);
     this.table.players = [];
     const dices = this.tableService.dices;
     for (let i = 0; i < dices; i++) {
@@ -47,6 +62,35 @@ export class GameComponent implements OnInit {
       this.router.navigate(["/select"]);
       return;
     }
+
+    this.playerResult = this.wsService.playerResult$.subscribe({
+      next: (playerId: string) => {
+        this.handlePlayerResult(playerId);
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("complete");
+      },
+    });
+
+    this.newPlayer = this.wsService.newPlayer$.subscribe({
+      next: (playerTable: string[]) => {
+        this.handleNewPlayer(playerTable);
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("complete");
+      },
+    });
+
+    this.getCurrentTable();
+  }
+
+  private getCurrentTable(): void {
     this.httpService
       .getCurrentTable(this.tableService.currentTable.id)
       .subscribe((table: Table) => {
@@ -55,6 +99,11 @@ export class GameComponent implements OnInit {
         } else {
           this.table = table;
           this.tableService.currentTable = this.table;
+          this.httpService
+            .getCurrentGame(this.table.id)
+            .subscribe((game: Game) => {
+              this.game = game;
+            });
         }
       });
   }
@@ -81,7 +130,7 @@ export class GameComponent implements OnInit {
       const playerId = sessionStorage.getItem("id");
       if (id && playerId) {
         this.wsService.sendMessage(
-          new WsMessage(id, "result", this.getDiceResult())
+          new WsMessage("result", this.getDiceResult(id))
         );
       } else {
         this.toolService.openSnackBar("Du bist offline", "Browser neu laden");
@@ -89,17 +138,48 @@ export class GameComponent implements OnInit {
     }, 1500);
   }
 
+  public show(): void {
+    const dice = this.form.get("dice")?.value;
+    const count = this.form.get("count")?.value;
+    this.wsService.sendMessage(
+      new WsMessage("openCups", [dice, count, this.game.id])
+    );
+  }
+
   private getRandomInt(): number {
     return Math.floor(Math.random() * Math.floor(5));
   }
 
-  private getDiceResult(): any[] {
-    const result = [];
+  private getDiceResult(id: string): any[] {
+    const result: any[] = [id];
     for (const img of this.images) {
       const subStr = img.src.replace(".png", "");
       const dice = parseInt(subStr[subStr.length - 1], 10);
       result.push(dice);
     }
     return result;
+  }
+
+  private handlePlayerResult(playerId: string): void {
+    for (const player of this.game.players) {
+      if (player.id === playerId) {
+        player.diced = true;
+      }
+    }
+  }
+
+  private handleNewPlayer(playerTable: string[]): void {
+    if (this.table.id !== playerTable[1]) {
+      return;
+    }
+    let found = false;
+    for (const player of this.game.players) {
+      if (player.id === playerTable[0]) {
+        found = true;
+      }
+    }
+    if (!found) {
+      this.getCurrentTable();
+    }
   }
 }

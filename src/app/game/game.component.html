@@ -6,17 +6,53 @@
   <span *ngFor="let player of table.players">{{ player.name }}, </span>
 </mat-card>
 
-<mat-grid-list cols="5" rowHeight="1:1">
-  <mat-grid-tile *ngFor="let image of images">
-    <img [src]="image.src" />
-  </mat-grid-tile>
-</mat-grid-list>
-<button mat-raised-button color="accent" (click)="dice()">Würfeln!</button>
+<div class="dice-div">
+  <mat-grid-list cols="3" rowHeight="100px">
+    <mat-grid-tile *ngFor="let image of images">
+      <div class="dice-image">
+        <img [src]="image.src" />
+      </div>
+    </mat-grid-tile>
+  </mat-grid-list>
+  <button mat-raised-button color="accent" (click)="dice()">Würfeln!</button>
+</div>
+<form class="start-form" [formGroup]="form">
+  <mat-form-field class="start-full-width">
+    <mat-label>Was wird gesucht?</mat-label>
+    <input
+      type="number"
+      min="1"
+      max="6"
+      matInput
+      autocomplete="off"
+      formControlName="dice"
+    />
+  </mat-form-field>
+  <mat-form-field class="start-full-width">
+    <mat-label>Wieviel</mat-label>
+    <input
+      matInput
+      type="number"
+      min="1"
+      autocomplete="off"
+      formControlName="count"
+    />
+  </mat-form-field>
+</form>
+<button mat-raised-button color="primary" class="firstButton" (click)="show()">
+  Aufdecken
+</button>
 
 <div class="player-container">
   <mat-grid-list cols="{{ table.players.length }}" rowHeight="250">
-    <mat-grid-tile *ngFor="let player of table.players">
-      <span>{{ player.name }}, </span>
-    </mat-grid-tile>
+    <ng-container *ngFor="let player of table.players">
+      <mat-grid-tile *ngIf="player.id != myId">
+        <span>{{ player.name }}</span>
+        <span *ngIf="!player.diced" style="margin-left: 15px"
+          >Wir warten!!!</span
+        >
+        <img src="../../assets/images/dice_cup.png" *ngIf="!player.openCup" />
+      </mat-grid-tile>
+    </ng-container>
   </mat-grid-list>
 </div>

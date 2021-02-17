@@ -16,8 +16,14 @@ export class HttpService {
     return this.postRequest(nodeUrl, body);
   }
 
-  getCurrentTable(id: string): Observable<any> {
+  public getCurrentTable(id: string): Observable<any> {
     const nodeUrl = "api/getTable";
+    const body = { id };
+    return this.postRequest(nodeUrl, body);
+  }
+
+  public getCurrentGame(id: string): Observable<any> {
+    const nodeUrl = "api/getCurrentGame";
     const body = { id };
     return this.postRequest(nodeUrl, body);
   }

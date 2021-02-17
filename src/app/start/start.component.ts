@@ -83,7 +83,7 @@ export class StartComponent implements OnInit {
   public login(id: string): void {
     if (id) {
       sessionStorage.setItem("id", id);
-      this.wsService.sendMessage(new WsMessage(id, "register"));
+      this.wsService.sendMessage(new WsMessage("register"));
       this.router.navigate(["/select"]);
     }
   }
