@@ -36,6 +36,7 @@ export class AppComponent implements OnDestroy, OnInit {
                   this.router.navigate(["/select"]);
                 } else {
                   this.tableService.currentTable = table;
+                  this.router.navigate(["/game"]);
                 }
               });
           }

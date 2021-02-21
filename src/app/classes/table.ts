@@ -1,3 +1,4 @@
+import { ɵPlayer } from "@angular/core";
 import { Player } from "./player";
 
 export class Table {
@@ -14,9 +15,9 @@ export class Table {
   }
   public id: string;
   public name: string;
-  public players: Player[];
   public maxplayers: number;
   public minplayers: number;
   public locked = false;
   public diceCount = 0;
+  public players: string[] = [];
 }

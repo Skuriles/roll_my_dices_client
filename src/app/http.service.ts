@@ -52,7 +52,7 @@ export class HttpService {
     return this.postRequest(nodeUrl, body);
   }
 
-  checkUserId(id: string): Observable<any> {
+  public checkUserId(id: string): Observable<any> {
     const nodeUrl = "api/checkUserId";
     const body = { id };
     return this.postRequest(nodeUrl, body);
@@ -88,8 +88,14 @@ export class HttpService {
     return this.postRequest(nodeUrl, body);
   }
 
-  leaveTable(playerId: string): Observable<any> {
+  public leaveTable(playerId: string): Observable<any> {
     const nodeUrl = "api/leaveTable";
+    const body = { playerId };
+    return this.postRequest(nodeUrl, body);
+  }
+
+  public getPlayersFromTable(playerId: string): Observable<any> {
+    const nodeUrl = "api/getPlayersFromTable";
     const body = { playerId };
     return this.postRequest(nodeUrl, body);
   }

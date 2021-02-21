@@ -3,7 +3,7 @@
 </button>
 <mat-card
   >{{ table.name }} - Spieler:
-  <span *ngFor="let player of table.players">{{ player.name }}, </span>
+  <span *ngFor="let player of players">{{ player.name }}, </span>
 </mat-card>
 
 <div class="dice-div">
@@ -44,8 +44,8 @@
 </button>
 
 <div class="player-container">
-  <mat-grid-list cols="{{ table.players.length }}" rowHeight="250">
-    <ng-container *ngFor="let player of table.players">
+  <mat-grid-list cols="{{ players.length }}" rowHeight="250">
+    <ng-container *ngFor="let player of players">
       <mat-grid-tile *ngIf="player.id != myId">
         <span>{{ player.name }}</span>
         <span *ngIf="!player.diced" style="margin-left: 15px"

@@ -2,8 +2,8 @@ import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { Subscription } from "rxjs";
-import { Game } from "../classes/game";
 import { DiceImage } from "../classes/image";
+import { Player } from "../classes/player";
 import { Table } from "../classes/table";
 import { WsMessage } from "../classes/wsMessage";
 import { HttpService } from "../http.service";
@@ -19,7 +19,6 @@ import { WebsocketService } from "../websocket.service";
 export class GameComponent implements OnInit {
   public images: DiceImage[] = [];
   public form: FormGroup;
-  public game: Game;
   public diceImages = [
     "../../assets/images/1.png",
     "../../assets/images/2.png",
@@ -29,9 +28,11 @@ export class GameComponent implements OnInit {
     "../../assets/images/6.png",
   ];
   public table: Table;
+  public players: Player[];
   public myId: string | null;
   public playerResult: Subscription;
   public newPlayer: Subscription;
+  public playerOffline: Subscription;
 
   constructor(
     private tableService: TableService,
@@ -49,7 +50,7 @@ export class GameComponent implements OnInit {
     });
     this.myId = sessionStorage.getItem("id");
     this.table = new Table("", 0, 0, 0);
-    this.table.players = [];
+    this.players = [];
     const dices = this.tableService.dices;
     for (let i = 0; i < dices; i++) {
       const img = new DiceImage();
@@ -57,12 +58,15 @@ export class GameComponent implements OnInit {
       img.src = this.diceImages[this.getRandomInt()];
       this.images.push(img);
     }
-
     if (!this.tableService.currentTable) {
       this.router.navigate(["/select"]);
       return;
     }
+    this.initSubs();
+    this.getCurrentTable();
+  }
 
+  private initSubs(): void {
     this.playerResult = this.wsService.playerResult$.subscribe({
       next: (playerId: string) => {
         this.handlePlayerResult(playerId);
@@ -71,7 +75,7 @@ export class GameComponent implements OnInit {
         console.log(err);
       },
       complete: () => {
-        console.log("complete");
+        console.log("playerResult");
       },
     });
 
@@ -83,11 +87,21 @@ export class GameComponent implements OnInit {
         console.log(err);
       },
       complete: () => {
-        console.log("complete");
+        console.log("newPlayer");
       },
     });
 
-    this.getCurrentTable();
+    this.playerOffline = this.wsService.playerOffline$.subscribe({
+      next: (playerId: string) => {
+        this.handlePlayerOffline(playerId);
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("playerOffline");
+      },
+    });
   }
 
   private getCurrentTable(): void {
@@ -98,11 +112,12 @@ export class GameComponent implements OnInit {
           this.router.navigate(["/select"]);
         } else {
           this.table = table;
+          sessionStorage.setItem("tableid", this.table.id);
           this.tableService.currentTable = this.table;
           this.httpService
-            .getCurrentGame(this.table.id)
-            .subscribe((game: Game) => {
-              this.game = game;
+            .getPlayersFromTable(table.id)
+            .subscribe((players: Player[]) => {
+              this.players = players;
             });
         }
       });
@@ -111,6 +126,7 @@ export class GameComponent implements OnInit {
   public leaveTable(): void {
     const id = this.tableService.currentTable?.id;
     const playerId = sessionStorage.getItem("id");
+    sessionStorage.removeItem("tableid");
     if (id && playerId) {
       this.httpService.leaveTable(playerId).subscribe(() => {
         this.router.navigate(["/select"]);
@@ -141,13 +157,13 @@ export class GameComponent implements OnInit {
   public show(): void {
     const dice = this.form.get("dice")?.value;
     const count = this.form.get("count")?.value;
-    this.wsService.sendMessage(
-      new WsMessage("openCups", [dice, count, this.game.id])
-    );
+    // this.wsService.sendMessage(
+    // new WsMessage("openCups", [dice, count, this.game.id])
+    // );
   }
 
   private getRandomInt(): number {
-    return Math.floor(Math.random() * Math.floor(5));
+    return Math.floor(Math.random() * Math.floor(6));
   }
 
   private getDiceResult(id: string): any[] {
@@ -161,7 +177,7 @@ export class GameComponent implements OnInit {
   }
 
   private handlePlayerResult(playerId: string): void {
-    for (const player of this.game.players) {
+    for (const player of this.players) {
       if (player.id === playerId) {
         player.diced = true;
       }
@@ -173,13 +189,27 @@ export class GameComponent implements OnInit {
       return;
     }
     let found = false;
-    for (const player of this.game.players) {
-      if (player.id === playerTable[0]) {
+    for (const player of this.table.players) {
+      if (player === playerTable[0]) {
         found = true;
       }
     }
     if (!found) {
       this.getCurrentTable();
+    }
+  }
+
+  private handlePlayerOffline(playerId: string): void {
+    for (let i = 0; i < this.table.players.length; i++) {
+      const ele = this.table.players[i];
+      if (ele === playerId) {
+        this.toolService.openSnackBar(
+          "Spieler hat den Tisch verlassen " + ele,
+          "Okay"
+        );
+        this.table.players.splice(i, 1);
+        return;
+      }
     }
   }
 }

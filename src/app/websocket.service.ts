@@ -20,6 +20,8 @@ export class WebsocketService {
   public playerResult$ = this.playerResult.asObservable();
   public newPlayer = new Subject<string[]>();
   public newPlayer$ = this.newPlayer.asObservable();
+  public playerOffline = new Subject<string>();
+  public playerOffline$ = this.playerOffline.asObservable();
 
   constructor() {}
 
@@ -63,9 +65,16 @@ export class WebsocketService {
       case "newPlayer":
         this.handleNewPlayer(message.params);
         break;
+      case "playerOffline":
+        this.handlePlayerOffline(message.params[0]);
+        break;
       default:
         break;
     }
+  }
+
+  public handlePlayerOffline(playerId: string): void {
+    this.playerOffline.next(playerId);
   }
 
   public sendMessage(msg: WsMessage): void {

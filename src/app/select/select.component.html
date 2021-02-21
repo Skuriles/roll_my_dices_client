@@ -8,18 +8,18 @@
   [multiple]="false"
   (selectionChange)="onTableSelected($event)"
 >
-  <mat-list-option *ngFor="let table of tables" [value]="table">
-    <h3 matLine>{{ table.name }}</h3>
+  <mat-list-option *ngFor="let table of tables" [value]="table.table">
+    <h3 matLine>{{ table.table.name }}</h3>
     <p matLine>
-      <span> Max: {{ table.maxplayers }} </span>
-      <span>Min: {{ table.minplayers }} </span>
+      <span> Max: {{ table.table.maxplayers }} </span>
+      <span>Min: {{ table.table.minplayers }} </span>
     </p>
     <p matLine>
       <span>Spieler: </span>
-      <span *ngFor="let player of table.players">{{ player.name }} </span>
+      <span *ngFor="let player of table.plTable">{{ player }} </span>
     </p>
     <p matLine>
-      <span *ngIf="table.locked">GESPERRT</span>
+      <span *ngIf="table.table.locked">GESPERRT</span>
     </p>
   </mat-list-option>
 </mat-selection-list>

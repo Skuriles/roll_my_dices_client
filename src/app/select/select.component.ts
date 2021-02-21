@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { MatSelectionListChange } from "@angular/material/list";
 import { Router } from "@angular/router";
+import { PlayerTable } from "../classes/playerTable";
 import { Table } from "../classes/table";
 import { HttpService } from "../http.service";
 import { TableService } from "../table.service";
@@ -12,7 +13,7 @@ import { ToolService } from "../tool.service";
   styleUrls: ["./select.component.less"],
 })
 export class SelectComponent implements OnInit {
-  public tables: Table[];
+  public tables: PlayerTable[];
   constructor(
     private router: Router,
     private tableService: TableService,
@@ -21,8 +22,9 @@ export class SelectComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.httpService.getTables().subscribe((tables: Table[]) => {
-      this.tables = tables;
+    this.tables = [];
+    this.httpService.getTables().subscribe((tablePls: PlayerTable[]) => {
+      this.tables = tablePls;
     });
   }
 
