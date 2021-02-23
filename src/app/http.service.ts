@@ -100,6 +100,18 @@ export class HttpService {
     return this.postRequest(nodeUrl, body);
   }
 
+  public startGame(tableId: string): Observable<any> {
+    const nodeUrl = "api/startGame";
+    const body = { tableId };
+    return this.postRequest(nodeUrl, body);
+  }
+
+  public nextRound(tableId: string): Observable<any> {
+    const nodeUrl = "api/nextRound";
+    const body = { tableId };
+    return this.postRequest(nodeUrl, body);
+  }
+
   // default http requests
   private postRequest(nodeUrl: string, body: any): Observable<any> {
     return this.http.post(nodeUrl, body);

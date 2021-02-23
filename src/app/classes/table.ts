@@ -1,6 +1,3 @@
-import { ɵPlayer } from "@angular/core";
-import { Player } from "./player";
-
 export class Table {
   constructor(
     name: string,
@@ -19,5 +16,9 @@ export class Table {
   public minplayers: number;
   public locked = false;
   public diceCount = 0;
-  public players: string[] = [];
+  public playerIds: string[] = [];
+  public round: number;
+  public started: boolean;
+  public waiting: boolean;
+  public roundFinished: boolean;
 }

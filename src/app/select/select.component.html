@@ -2,24 +2,46 @@
   <button mat-raised-button color="primary" [routerLink]="['/createTable']">
     Tisch erstellen
   </button>
+  <div class="icon-legend">
+    <mat-icon aria-hidden="false" aria-label="Tisch gesperrt">block</mat-icon>
+    <span>= Spiel gestartet</span>
+    <mat-icon
+      aria-hidden="false"
+      aria-label="Tisch gesperrt"
+      style="margin-left: 8px"
+      >no_accounts</mat-icon
+    ><span> = Tisch gesperrt oder voll</span>
+  </div>
 </div>
 <mat-selection-list
   #tableList
   [multiple]="false"
   (selectionChange)="onTableSelected($event)"
 >
-  <mat-list-option *ngFor="let table of tables" [value]="table.table">
-    <h3 matLine>{{ table.table.name }}</h3>
+  <mat-list-option *ngFor="let plTable of plTables" [value]="plTable.table">
+    <h3 matLine>{{ plTable.table.name }}</h3>
+    <mat-icon
+      aria-hidden="false"
+      aria-label="Tisch gesperrt"
+      *ngIf="plTable.table.started"
+      >block</mat-icon
+    >
+    <mat-icon
+      aria-hidden="false"
+      aria-label="Tisch gesperrt"
+      *ngIf="plTable.table.locked"
+      >no_accounts</mat-icon
+    >
     <p matLine>
-      <span> Max: {{ table.table.maxplayers }} </span>
-      <span>Min: {{ table.table.minplayers }} </span>
+      <span> Max: {{ plTable.table.maxplayers }} </span>
+      <span>Min: {{ plTable.table.minplayers }} </span>
     </p>
     <p matLine>
       <span>Spieler: </span>
-      <span *ngFor="let player of table.plTable">{{ player }} </span>
+      <span *ngFor="let player of plTable.plNames">{{ player }} </span>
     </p>
     <p matLine>
-      <span *ngIf="table.table.locked">GESPERRT</span>
+      <span *ngIf="plTable.table.locked">GESPERRT</span>
     </p>
   </mat-list-option>
 </mat-selection-list>

@@ -2,7 +2,10 @@ import { Injectable } from "@angular/core";
 import { WsMessage } from "./classes/wsMessage";
 import { WebSocketSubject } from "rxjs/webSocket";
 import { ToolService } from "./tool.service";
-import { Subject } from "rxjs";
+import { from, Subject } from "rxjs";
+import { PlayerTable } from "./classes/playerTable";
+import { Message } from "@angular/compiler/src/i18n/i18n_ast";
+import { RoundResult } from "./classes/roundResult";
 
 @Injectable({
   providedIn: "root",
@@ -22,6 +25,12 @@ export class WebsocketService {
   public newPlayer$ = this.newPlayer.asObservable();
   public playerOffline = new Subject<string>();
   public playerOffline$ = this.playerOffline.asObservable();
+  public newGame = new Subject<string>();
+  public newGame$ = this.newGame.asObservable();
+  public allPlayersDicedRes = new Subject<string>();
+  public allPlayersDicedRes$ = this.allPlayersDicedRes.asObservable();
+  public roundResult = new Subject<RoundResult>();
+  public roundResult$ = this.roundResult.asObservable();
 
   constructor() {}
 
@@ -68,20 +77,45 @@ export class WebsocketService {
       case "playerOffline":
         this.handlePlayerOffline(message.params[0]);
         break;
+      case "gameStarted":
+        this.handleGameStarted(message.params[0]);
+        break;
+      case "allPlayersDiced":
+        this.allPlayersDiced(message.params[0]);
+        break;
+      case "sendRoundResult":
+        this.handleRoundResult(message);
+        break;
       default:
         break;
     }
-  }
-
-  public handlePlayerOffline(playerId: string): void {
-    this.playerOffline.next(playerId);
   }
 
   public sendMessage(msg: WsMessage): void {
     this.socket$.next(msg);
   }
 
-  public close(): void {
+  private handleRoundResult(message: WsMessage): void {
+    const success = message.params[0] as boolean;
+    const diceCount = message.params[1] as number;
+    const dice = message.params[2] as number;
+    const count = message.params[3] as number;
+    const name = message.params[4] as string;
+    const fromPlayer = message.params[5] as string;
+    const roundResult = new RoundResult(success, diceCount, dice, count, name);
+    roundResult.fromPlayer = fromPlayer;
+    this.roundResult.next(roundResult);
+  }
+
+  private allPlayersDiced(tableId: string): void {
+    this.allPlayersDicedRes.next(tableId);
+  }
+
+  private handlePlayerOffline(playerId: string): void {
+    this.playerOffline.next(playerId);
+  }
+
+  private close(): void {
     this.socket$.complete();
   }
 
@@ -98,7 +132,11 @@ export class WebsocketService {
     this.playerResult.next(playerId);
   }
 
-  private handleNewPlayer(playerAndTableId: string[]): void {
-    this.newPlayer.next(playerAndTableId);
+  private handleNewPlayer(params: string[]): void {
+    this.newPlayer.next(params);
+  }
+
+  private handleGameStarted(tableId: string): void {
+    this.newGame.next(tableId);
   }
 }

@@ -1,8 +1,10 @@
 <button mat-raised-button color="primary" (click)="leaveTable()">
   Tisch verlassen
 </button>
-<mat-card
-  >{{ table.name }} - Spieler:
+<mat-card class="game-card">
+  {{ table.name }} - <span *ngIf="table.started">Runde: {{ table.round }}</span
+  ><span *ngIf="!table.started">Spiel noch nicht gestartet</span> <br />
+  Spieler:
   <span *ngFor="let player of players">{{ player.name }}, </span>
 </mat-card>
 
@@ -14,7 +16,14 @@
       </div>
     </mat-grid-tile>
   </mat-grid-list>
-  <button mat-raised-button color="accent" (click)="dice()">Würfeln!</button>
+  <button
+    mat-raised-button
+    color="accent"
+    (click)="dice()"
+    [disabled]="myPlayer.diced"
+  >
+    Würfeln!
+  </button>
 </div>
 <form class="start-form" [formGroup]="form">
   <mat-form-field class="start-full-width">
@@ -38,9 +47,34 @@
       formControlName="count"
     />
   </mat-form-field>
+  <mat-form-field class="start-full-width">
+    <mat-label>Von wem?</mat-label>
+    <mat-select formControlName="players">
+      <mat-option *ngFor="let player of players" [value]="player.id">{{
+        player.name
+      }}</mat-option>
+    </mat-select>
+    <mat-hint align="end">Von welchem Spieler?</mat-hint>
+  </mat-form-field>
 </form>
-<button mat-raised-button color="primary" class="firstButton" (click)="show()">
+<button
+  mat-raised-button
+  color="primary"
+  class="firstButton"
+  (click)="show()"
+  [disabled]="table.waiting"
+>
   Aufdecken
+</button>
+<button
+  mat-raised-button
+  color="accent"
+  class="firstButton"
+  (click)="newRound()"
+  *ngIf="table.roundFinished"
+  style="margin-left: 15px"
+>
+  Neue Runde
 </button>
 
 <div class="player-container">
@@ -52,6 +86,10 @@
           >Wir warten!!!</span
         >
         <img src="../../assets/images/dice_cup.png" *ngIf="!player.openCup" />
+        <img
+          src="../../assets/images/dice_cup_open.png"
+          *ngIf="player.openCup"
+        />
       </mat-grid-tile>
     </ng-container>
   </mat-grid-list>

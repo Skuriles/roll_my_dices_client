@@ -16,8 +16,13 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { CreateTableComponent } from "./create-table/create-table.component";
 import { HttpClientModule } from "@angular/common/http";
 import { MatCardModule } from "@angular/material/card";
+import { MatSelectModule } from "@angular/material/select";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatGridListModule } from "@angular/material/grid-list";
+import { MatDialogModule } from "@angular/material/dialog";
+import { ConfirmDialogComponent } from "./confirm-dialog/confirm-dialog.component";
+import { MatIconModule } from "@angular/material/icon";
+import { RoundEndDialogComponent } from "./roundend-dialog/roundend-dialog.component";
 
 @NgModule({
   declarations: [
@@ -26,6 +31,8 @@ import { MatGridListModule } from "@angular/material/grid-list";
     SelectComponent,
     GameComponent,
     CreateTableComponent,
+    ConfirmDialogComponent,
+    RoundEndDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -41,6 +48,9 @@ import { MatGridListModule } from "@angular/material/grid-list";
     MatCardModule,
     MatSnackBarModule,
     MatGridListModule,
+    MatDialogModule,
+    MatIconModule,
+    MatSelectModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

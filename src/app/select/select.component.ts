@@ -13,7 +13,7 @@ import { ToolService } from "../tool.service";
   styleUrls: ["./select.component.less"],
 })
 export class SelectComponent implements OnInit {
-  public tables: PlayerTable[];
+  public plTables: PlayerTable[];
   constructor(
     private router: Router,
     private tableService: TableService,
@@ -22,9 +22,9 @@ export class SelectComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.tables = [];
+    this.plTables = [];
     this.httpService.getTables().subscribe((tablePls: PlayerTable[]) => {
-      this.tables = tablePls;
+      this.plTables = tablePls;
     });
   }
 
@@ -34,7 +34,14 @@ export class SelectComponent implements OnInit {
 
   public onTableSelected(event: MatSelectionListChange): void {
     if (event) {
-      this.tableService.selectTable(event.options[0].value as Table);
+      const table = event.options[0].value as Table;
+      if (table.locked || table.started) {
+        this.toolService.openSnackBar(
+          "Tisch gesperrt, voll oder bereits gestartet",
+          "Bitte warten"
+        );
+      }
+      this.tableService.selectTable(table);
       const id = sessionStorage.getItem("id");
       if (!id) {
         this.router.navigate(["/start"]);
