@@ -2,6 +2,14 @@
   <button mat-raised-button color="primary" [routerLink]="['/createTable']">
     Tisch erstellen
   </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="ngOnInit()"
+    style="margin-left: 15px"
+  >
+    Aktualisieren
+  </button>
   <div class="icon-legend">
     <mat-icon aria-hidden="false" aria-label="Tisch gesperrt">block</mat-icon>
     <span>= Spiel gestartet</span>
@@ -35,6 +43,9 @@
     <p matLine>
       <span> Max: {{ plTable.table.maxplayers }} </span>
       <span>Min: {{ plTable.table.minplayers }} </span>
+    </p>
+    <p matLine>
+      <span> Würfel zu Beginn: {{ plTable.table.diceCount }} </span>
     </p>
     <p matLine>
       <span>Spieler: </span>

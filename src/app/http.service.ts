@@ -94,9 +94,9 @@ export class HttpService {
     return this.postRequest(nodeUrl, body);
   }
 
-  public getPlayersFromTable(playerId: string): Observable<any> {
+  public getPlayersFromTable(tableId: string): Observable<any> {
     const nodeUrl = "api/getPlayersFromTable";
-    const body = { playerId };
+    const body = { playerId: tableId };
     return this.postRequest(nodeUrl, body);
   }
 

@@ -1,6 +1,14 @@
 <button mat-raised-button color="primary" (click)="leaveTable()">
   Tisch verlassen
 </button>
+
+<mat-card class="game-card" *ngIf="myPlayer.won">
+  Du hast alle Würfel abgelegt! Warte bis die Runde beendet ist
+</mat-card>
+<mat-card class="game-card" *ngIf="!table.started">
+  Es wurde noch kein Spiel gestartet oder die aktuelle Runde wurde beendet -
+  Neue Runde Starten um weiterzuspielen!
+</mat-card>
 <mat-card class="game-card">
   {{ table.name }} - <span *ngIf="table.started">Runde: {{ table.round }}</span
   ><span *ngIf="!table.started">Spiel noch nicht gestartet</span> <br />
@@ -20,23 +28,60 @@
     mat-raised-button
     color="accent"
     (click)="dice()"
-    [disabled]="myPlayer.diced"
+    [disabled]="myPlayer.diced || myPlayer.won"
+    *ngIf="table.started"
   >
     Würfeln!
   </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="startGame()"
+    *ngIf="!table.started"
+  >
+    Spiel starten!
+  </button>
+</div>
+<div class="imageDiv">
+  <mat-label>Was wird gesucht? </mat-label><br />
+  <!-- <img
+    [src]="diceImages[0]"
+    (click)="select(1)"
+    class="diceImage"
+    [ngClass]="{ selectedDice: selectedDice == 1 }"
+  /> -->
+  <img
+    [src]="diceImages[1]"
+    (click)="select(2)"
+    class="diceImage"
+    [ngClass]="{ selectedDice: selectedDice == 2 }"
+  />
+  <img
+    [src]="diceImages[2]"
+    (click)="select(3)"
+    class="diceImage"
+    [ngClass]="{ selectedDice: selectedDice == 3 }"
+  />
+  <img
+    [src]="diceImages[3]"
+    (click)="select(4)"
+    class="diceImage"
+    [ngClass]="{ selectedDice: selectedDice == 4 }"
+  />
+  <img
+    [src]="diceImages[4]"
+    (click)="select(5)"
+    class="diceImage"
+    [ngClass]="{ selectedDice: selectedDice == 5 }"
+  />
+  <img
+    [src]="diceImages[5]"
+    (click)="select(6)"
+    class="diceImage"
+    [ngClass]="{ selectedDice: selectedDice == 6 }"
+  />
 </div>
 <form class="start-form" [formGroup]="form">
-  <mat-form-field class="start-full-width">
-    <mat-label>Was wird gesucht?</mat-label>
-    <input
-      type="number"
-      min="1"
-      max="6"
-      matInput
-      autocomplete="off"
-      formControlName="dice"
-    />
-  </mat-form-field>
   <mat-form-field class="start-full-width">
     <mat-label>Wieviel</mat-label>
     <input
@@ -47,10 +92,22 @@
       formControlName="count"
     />
   </mat-form-field>
+
+  <!-- <mat-form-field class="start-full-width">
+      <mat-label>Was wird gesucht?</mat-label>
+      <!-- <input
+        type="number"
+        min="1"
+        max="6"
+        matInput
+        autocomplete="off"
+        formControlName="dice"
+      />
+  </mat-form-field> -->
   <mat-form-field class="start-full-width">
     <mat-label>Von wem?</mat-label>
     <mat-select formControlName="players">
-      <mat-option *ngFor="let player of players" [value]="player.id">{{
+      <mat-option *ngFor="let player of cbPlayers" [value]="player.id">{{
         player.name
       }}</mat-option>
     </mat-select>
@@ -82,9 +139,10 @@
     <ng-container *ngFor="let player of players">
       <mat-grid-tile *ngIf="player.id != myId">
         <span>{{ player.name }}</span>
-        <span *ngIf="!player.diced" style="margin-left: 15px"
+        <span *ngIf="!player.diced && !player.won" style="margin-left: 15px"
           >Wir warten!!!</span
         >
+        <span *ngIf="player.won"> ist fertig!!</span>
         <img src="../../assets/images/dice_cup.png" *ngIf="!player.openCup" />
         <img
           src="../../assets/images/dice_cup_open.png"

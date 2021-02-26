@@ -21,4 +21,5 @@ export class Table {
   public started: boolean;
   public waiting: boolean;
   public roundFinished: boolean;
+  public gameFinished: boolean;
 }

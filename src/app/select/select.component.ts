@@ -40,7 +40,9 @@ export class SelectComponent implements OnInit {
           "Tisch gesperrt, voll oder bereits gestartet",
           "Bitte warten"
         );
+        return;
       }
+
       this.tableService.selectTable(table);
       const id = sessionStorage.getItem("id");
       if (!id) {

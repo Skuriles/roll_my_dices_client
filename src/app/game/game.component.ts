@@ -43,6 +43,11 @@ export class GameComponent implements OnInit, OnDestroy {
   public newGame: Subscription;
   public roundFinished: Subscription;
   public roundResult: Subscription;
+  public newRoundStarted: Subscription;
+  public playersFinished: Subscription;
+  public gameFinished: Subscription;
+  public selectedDice = 2;
+  public cbPlayers: Player[] = [];
 
   constructor(
     private tableService: TableService,
@@ -56,7 +61,6 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
-      dice: [0, [Validators.required]],
       count: [0, [Validators.required]],
       players: [null, [Validators.required]],
     });
@@ -64,13 +68,6 @@ export class GameComponent implements OnInit, OnDestroy {
     this.myPlayer = new Player();
     this.table = new Table("", 0, 0, 0);
     this.players = [];
-    const dices = this.tableService.dices;
-    for (let i = 0; i < dices; i++) {
-      const img = new DiceImage();
-      img.id = i;
-      img.src = this.diceImages[this.getRandomInt()];
-      this.images.push(img);
-    }
     if (!this.tableService.currentTable) {
       this.router.navigate(["/select"]);
       return;
@@ -98,6 +95,19 @@ export class GameComponent implements OnInit, OnDestroy {
     if (this.roundResult) {
       this.roundResult.unsubscribe();
     }
+    if (this.newRoundStarted) {
+      this.newRoundStarted.unsubscribe();
+    }
+    if (this.playersFinished) {
+      this.playersFinished.unsubscribe();
+    }
+    if (this.gameFinished) {
+      this.gameFinished.unsubscribe();
+    }
+  }
+
+  public select(dice: number): void {
+    this.selectedDice = dice;
   }
 
   private initSubs(): void {
@@ -172,6 +182,62 @@ export class GameComponent implements OnInit, OnDestroy {
         console.log("gameStarted");
       },
     });
+
+    this.newRoundStarted = this.wsService.newRoundStarted$.subscribe({
+      next: (table: Table) => {
+        this.handleNewRoundStarted(table);
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("newRound");
+      },
+    });
+
+    this.playersFinished = this.wsService.playersFinished$.subscribe({
+      next: (players: Player[]) => {
+        this.handlePlayersFinished(players);
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("playersFinished");
+      },
+    });
+
+    this.gameFinished = this.wsService.gameFinished$.subscribe({
+      next: (tableId: string) => {
+        this.handleGameFinished(tableId);
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("gameFinished");
+      },
+    });
+  }
+
+  private handleGameFinished(tableId: string): void {
+    if (this.table.id === tableId) {
+      this.getCurrentTable();
+    }
+  }
+
+  private handlePlayersFinished(players: Player[]): void {
+    let str = "";
+    let isFirst = true;
+    for (const pl of players) {
+      if (isFirst) {
+        str += pl.name + " - ";
+      } else {
+        str += " - " + pl.name;
+      }
+      isFirst = false;
+    }
+    this.toolService.openSnackBar("Spieler sind fertig: " + str, "Okay");
   }
 
   private handleRoundResult(roundRes: RoundResult): void {
@@ -184,6 +250,7 @@ export class GameComponent implements OnInit, OnDestroy {
         playerName: roundRes.playerName,
         count: roundRes.count,
         fromPlayer: roundRes.fromPlayer,
+        gameFinished: roundRes.gameFinished,
       },
     });
 
@@ -204,15 +271,33 @@ export class GameComponent implements OnInit, OnDestroy {
             .getPlayersFromTable(table.id)
             .subscribe((players: Player[]) => {
               this.players = players;
-              this.form.get("players")?.setValue(this.players[0].id);
-              for (const pl of players) {
-                if (pl.id === this.myId) {
-                  this.myPlayer = pl;
-                }
-              }
+              this.setMyPlayer(players);
             });
         }
       });
+  }
+
+  private setDiceImages(dices: number): void {
+    this.images = [];
+    for (let i = 0; i < dices; i++) {
+      const img = new DiceImage();
+      img.id = i;
+      img.src = this.diceImages[this.getRandomInt()];
+      this.images.push(img);
+    }
+  }
+
+  private setMyPlayer(players: Player[]): void {
+    this.cbPlayers = [];
+    for (const pl of players) {
+      if (pl.id === this.myId) {
+        this.myPlayer = pl;
+        this.setDiceImages(pl.dices);
+      } else {
+        this.cbPlayers.push(pl);
+      }
+    }
+    this.form.get("players")?.setValue(this.cbPlayers[0].id);
   }
 
   public leaveTable(): void {
@@ -228,7 +313,6 @@ export class GameComponent implements OnInit, OnDestroy {
 
   public dice(): void {
     if (!this.table.started) {
-      this.openDialog();
       return;
     }
     const interval = setInterval(() => {
@@ -255,6 +339,8 @@ export class GameComponent implements OnInit, OnDestroy {
     dialogData.header = "Neues Spiel starten";
     dialogData.text1 = "Mit Starten wird das nächste Spiel gestartet";
     dialogData.text2 = "Sicher?";
+    dialogData.btnText1 = "Starten";
+    dialogData.btnText2 = "Abbrechen";
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: dialogData,
     });
@@ -268,8 +354,12 @@ export class GameComponent implements OnInit, OnDestroy {
     });
   }
 
+  public startGame(): void {
+    this.openDialog();
+  }
+
   public show(): void {
-    const dice = this.form.get("dice")?.value;
+    const dice = this.selectedDice;
     const count = this.form.get("count")?.value;
     const playerId = this.form.get("players")?.value;
     if (
@@ -280,10 +370,42 @@ export class GameComponent implements OnInit, OnDestroy {
       playerId &&
       playerId !== this.myId
     ) {
-      this.wsService.sendMessage(
-        new WsMessage("openCups", [dice, count, playerId, this.table.id])
-      );
+      let name = "";
+      for (const pl of this.players) {
+        if (pl.id === playerId) {
+          name = pl.name;
+        }
+      }
+      const dialogData = new DialogData();
+      dialogData.header = "Aufdecken";
+      dialogData.text1 = "Willst du sicher aufdecken:";
+      dialogData.text2 = "Gesucht: " + count + "x" + dice + "er von " + name;
+      dialogData.btnText1 = "Ja";
+      dialogData.btnText2 = "Ups - nein";
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        data: dialogData,
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.showConfirmed(dice, count, playerId);
+        }
+      });
+    } else {
+      this.toolService.openSnackBar("Du kann nicht 0 Würfel aufdecken", "Okay");
     }
+  }
+
+  private showConfirmed(dice: number, count: number, playerId: string): void {
+    this.wsService.sendMessage(
+      new WsMessage("openCups", [
+        dice,
+        count,
+        playerId,
+        this.table.id,
+        this.myId,
+      ])
+    );
   }
 
   public newRound(): void {
@@ -291,6 +413,8 @@ export class GameComponent implements OnInit, OnDestroy {
     dialogData.header = "Neue Runde starten";
     dialogData.text1 = "Mit Starten wird die nächste Runde gestartet";
     dialogData.text2 = "Sicher?";
+    dialogData.btnText1 = "Starte";
+    dialogData.btnText2 = "Abrrechen";
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: dialogData,
     });
@@ -298,16 +422,24 @@ export class GameComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.table.roundFinished = false;
-        this.httpService.nextRound(this.table.id).subscribe((table: Table) => {
-          this.table = table;
-          this.httpService
-            .getPlayersFromTable(this.myId as string)
-            .subscribe((players: Player[]) => {
-              this.players = players;
-            });
-        });
+        this.httpService
+          .nextRound(this.table.id)
+          .subscribe((table: Table) => {});
       }
     });
+  }
+
+  private handleNewRoundStarted(table: Table): void {
+    this.toolService.openSnackBar("Neue Runde wurde gestartet", "Würfel!");
+    this.table = table;
+    this.httpService
+      .getPlayersFromTable(this.table.id)
+      .subscribe((players: Player[]) => {
+        setTimeout(() => {
+          this.players = players;
+          this.setMyPlayer(players);
+        }, 10);
+      });
   }
 
   private getRandomInt(): number {
@@ -355,10 +487,8 @@ export class GameComponent implements OnInit, OnDestroy {
     if (this.table.id !== tableId) {
       return;
     }
+    this.getCurrentTable();
     this.toolService.openSnackBar("Spiel gestartet: ", "Okay");
-    this.table.started = true;
-    this.table.waiting = true;
-    this.table.round = 1;
   }
 
   private handlePlayerOffline(playerId: string): void {

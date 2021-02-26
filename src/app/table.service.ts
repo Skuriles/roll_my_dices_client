@@ -11,7 +11,6 @@ export class TableService {
 
   constructor(private httpService: HttpService) {}
 
-  public dices = 5;
   public selectTable(table: Table): void {
     this.currentTable = table;
   }

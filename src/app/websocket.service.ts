@@ -6,6 +6,8 @@ import { from, Subject } from "rxjs";
 import { PlayerTable } from "./classes/playerTable";
 import { Message } from "@angular/compiler/src/i18n/i18n_ast";
 import { RoundResult } from "./classes/roundResult";
+import { Table } from "./classes/table";
+import { Player } from "./classes/player";
 
 @Injectable({
   providedIn: "root",
@@ -31,6 +33,12 @@ export class WebsocketService {
   public allPlayersDicedRes$ = this.allPlayersDicedRes.asObservable();
   public roundResult = new Subject<RoundResult>();
   public roundResult$ = this.roundResult.asObservable();
+  public newRoundStarted = new Subject<Table>();
+  public newRoundStarted$ = this.newRoundStarted.asObservable();
+  public playersFinished = new Subject<Player[]>();
+  public playersFinished$ = this.playersFinished.asObservable();
+  public gameFinished = new Subject<string>();
+  public gameFinished$ = this.gameFinished.asObservable();
 
   constructor() {}
 
@@ -86,6 +94,15 @@ export class WebsocketService {
       case "sendRoundResult":
         this.handleRoundResult(message);
         break;
+      case "newRound":
+        this.handleNewRound(message);
+        break;
+      case "playerFinished":
+        this.handlePlayerFinished(message);
+        break;
+      case "gameFinished":
+        this.handleGameFinished(message);
+        break;
       default:
         break;
     }
@@ -102,8 +119,16 @@ export class WebsocketService {
     const count = message.params[3] as number;
     const name = message.params[4] as string;
     const fromPlayer = message.params[5] as string;
-    const roundResult = new RoundResult(success, diceCount, dice, count, name);
-    roundResult.fromPlayer = fromPlayer;
+    const gameFinished = message.params[6] as boolean;
+    const roundResult = new RoundResult(
+      success,
+      diceCount,
+      dice,
+      count,
+      name,
+      gameFinished,
+      fromPlayer
+    );
     this.roundResult.next(roundResult);
   }
 
@@ -138,5 +163,17 @@ export class WebsocketService {
 
   private handleGameStarted(tableId: string): void {
     this.newGame.next(tableId);
+  }
+
+  private handleNewRound(message: WsMessage): void {
+    this.newRoundStarted.next(message.params[0] as Table);
+  }
+
+  private handlePlayerFinished(message: WsMessage): void {
+    this.playersFinished.next(message.params[0] as Player[]);
+  }
+
+  private handleGameFinished(message: WsMessage): void {
+    this.gameFinished.next(message.params[0] as string);
   }
 }

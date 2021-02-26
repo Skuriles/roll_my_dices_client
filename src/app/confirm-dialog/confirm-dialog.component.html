@@ -6,6 +6,8 @@
   </p>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Abbrechen</button>
-  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Starten</button>
+  <button mat-button mat-dialog-close>{{ data.btnText2 }}</button>
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>
+    {{ data.btnText1 }}
+  </button>
 </mat-dialog-actions>
