@@ -6,17 +6,17 @@
     waren {{ data.count }} x {{ data.dice }}er
   </p>
   <p>
-    {{ data.playerName }} <span *ngIf="!data.success">hatte Recht</span
-    ><span *ngIf="data.success">hat verkackt</span>
+    {{ data.playerName }} <span *ngIf="data.success">hatte Recht</span
+    ><span *ngIf="!data.success">hat verkackt</span>
   </p>
   <p>
-    {{ data.fromPlayer }} <span *ngIf="data.success">lag richtig</span
-    ><span *ngIf="!data.success">hat veloren</span>
+    {{ data.fromPlayer }} <span *ngIf="!data.success">lag richtig</span
+    ><span *ngIf="data.success">hat verloren</span>
   </p>
   <p *ngIf="data.gameFinished">
     DAS SPIEL IST BEENDET:
-    <span *ngIf="data.success"> {{ data.playerName }}</span
-    ><span *ngIf="!data.success"> {{ data.fromPlayer }}</span> hat verloren!
+    <span *ngIf="!data.success"> {{ data.playerName }}</span
+    ><span *ngIf="data.success"> {{ data.fromPlayer }}</span> hat verloren!
   </p>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

@@ -11,11 +11,14 @@ import { HttpService } from "../http.service";
 import { TableService } from "../table.service";
 import { ToolService } from "../tool.service";
 import { WebsocketService } from "../websocket.service";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog, MatDialogConfig } from "@angular/material/dialog";
 import { ConfirmDialogComponent } from "../confirm-dialog/confirm-dialog.component";
 import { RoundResult } from "../classes/roundResult";
 import { RoundEndDialogComponent } from "../roundend-dialog/roundend-dialog.component";
 import { DialogData } from "../classes/dialogData";
+import { LockResult } from "../classes/lockResult";
+import { PlayerCorrectDialogData } from "../classes/playerCorrectDialogData";
+import { PlayerCorrectionDialogComponent } from "../player-correction-dialog/player-correction-dialog.component";
 
 @Component({
   selector: "app-game",
@@ -46,6 +49,8 @@ export class GameComponent implements OnInit, OnDestroy {
   public newRoundStarted: Subscription;
   public playersFinished: Subscription;
   public gameFinished: Subscription;
+  public tableLocked: Subscription;
+  public tableCorrection: Subscription;
   public selectedDice = 2;
   public cbPlayers: Player[] = [];
 
@@ -103,6 +108,12 @@ export class GameComponent implements OnInit, OnDestroy {
     }
     if (this.gameFinished) {
       this.gameFinished.unsubscribe();
+    }
+    if (this.tableLocked) {
+      this.tableLocked.unsubscribe();
+    }
+    if (this.tableCorrection) {
+      this.tableCorrection.unsubscribe();
     }
   }
 
@@ -218,6 +229,38 @@ export class GameComponent implements OnInit, OnDestroy {
         console.log("gameFinished");
       },
     });
+
+    this.tableLocked = this.wsService.tableLocked$.subscribe({
+      next: (result: LockResult) => {
+        if (this.table.id === result.tableId) {
+          this.table.locked = result.locked;
+        }
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("tableLocked");
+      },
+    });
+
+    this.tableCorrection = this.wsService.tableCorrection$.subscribe({
+      next: (tableId: string) => {
+        if (this.table.id === tableId) {
+          this.toolService.openSnackBar(
+            "Es wurden Korrekturen am Tisch vorgenommen",
+            "Okay"
+          );
+          this.getCurrentTable();
+        }
+      },
+      error: (err: any) => {
+        console.log(err);
+      },
+      complete: () => {
+        console.log("tableCorrection");
+      },
+    });
   }
 
   private handleGameFinished(tableId: string): void {
@@ -297,7 +340,9 @@ export class GameComponent implements OnInit, OnDestroy {
         this.cbPlayers.push(pl);
       }
     }
-    this.form.get("players")?.setValue(this.cbPlayers[0].id);
+    if (this.cbPlayers && this.cbPlayers.length > 0) {
+      this.form.get("players")?.setValue(this.cbPlayers[0].id);
+    }
   }
 
   public leaveTable(): void {
@@ -338,7 +383,12 @@ export class GameComponent implements OnInit, OnDestroy {
     const dialogData = new DialogData();
     dialogData.header = "Neues Spiel starten";
     dialogData.text1 = "Mit Starten wird das nächste Spiel gestartet";
-    dialogData.text2 = "Sicher?";
+    if (this.table.started) {
+      dialogData.text2 = "Das bestehende spiel wird abgebrochen! Sicher?";
+    } else {
+      dialogData.text2 = "Sicher?";
+    }
+
     dialogData.btnText1 = "Starten";
     dialogData.btnText2 = "Abbrechen";
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
@@ -356,6 +406,57 @@ export class GameComponent implements OnInit, OnDestroy {
 
   public startGame(): void {
     this.openDialog();
+  }
+
+  public correct(): void {
+    if (
+      this.table.gameFinished ||
+      this.table.roundFinished ||
+      !this.table.started ||
+      this.checkPlayerDiced()
+    ) {
+      const dialogConfig = new MatDialogConfig();
+
+      dialogConfig.maxWidth = "90vw";
+      dialogConfig.width = "70vw";
+      dialogConfig.maxHeight = "90vw";
+      dialogConfig.minHeight = "50vw";
+
+      const dialogData = new PlayerCorrectDialogData();
+      dialogData.players = this.players;
+      dialogData.table = this.table;
+      dialogConfig.data = dialogData;
+      const dialogRef = this.dialog.open(PlayerCorrectionDialogComponent, {
+        data: dialogData,
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.httpService
+            .changeTable(this.tableService.changed)
+            .subscribe(() => {});
+        }
+      });
+    } else {
+      this.toolService.openSnackBar(
+        "Änderungen können nur nach jeder Runde, am Ende oder bevor ein Spieler gewürfel that vorgenommen werden",
+        "Okay",
+        5000
+      );
+    }
+  }
+
+  private checkPlayerDiced(): boolean {
+    for (const pl of this.players) {
+      if (pl.diced) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public blockTable(): void {
+    this.httpService.lockTable(this.table.id, !this.table.locked).subscribe();
   }
 
   public show(): void {
@@ -413,7 +514,7 @@ export class GameComponent implements OnInit, OnDestroy {
     dialogData.header = "Neue Runde starten";
     dialogData.text1 = "Mit Starten wird die nächste Runde gestartet";
     dialogData.text2 = "Sicher?";
-    dialogData.btnText1 = "Starte";
+    dialogData.btnText1 = "Starten";
     dialogData.btnText2 = "Abrrechen";
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: dialogData,

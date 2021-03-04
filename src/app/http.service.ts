@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Table } from "./classes/table";
 import { Observable } from "rxjs";
+import { ChangedTable } from "./classes/changedTable";
 
 @Injectable({
   providedIn: "root",
@@ -58,15 +59,9 @@ export class HttpService {
     return this.postRequest(nodeUrl, body);
   }
 
-  public removeTable(id: number): Observable<any> {
+  public removeTable(tableId: string): Observable<any> {
     const nodeUrl = "api/removeTable";
-    const body = { id };
-    return this.postRequest(nodeUrl, body);
-  }
-
-  public addPlayer(id: number, player: string): Observable<any> {
-    const nodeUrl = "api/addPlayer";
-    const body = { id, player };
+    const body = { tableId };
     return this.postRequest(nodeUrl, body);
   }
 
@@ -76,9 +71,9 @@ export class HttpService {
     return this.postRequest(nodeUrl, body);
   }
 
-  public lockTable(id: number, lock: boolean): Observable<any> {
+  public lockTable(tableId: string, lock: boolean): Observable<any> {
     const nodeUrl = "api/lockTable";
-    const body = { id, lock };
+    const body = { tableId, lock };
     return this.postRequest(nodeUrl, body);
   }
 
@@ -109,6 +104,12 @@ export class HttpService {
   public nextRound(tableId: string): Observable<any> {
     const nodeUrl = "api/nextRound";
     const body = { tableId };
+    return this.postRequest(nodeUrl, body);
+  }
+
+  public changeTable(changed: ChangedTable): Observable<any> {
+    const nodeUrl = "api/updateTable";
+    const body = { changed };
     return this.postRequest(nodeUrl, body);
   }
 

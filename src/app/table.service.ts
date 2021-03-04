@@ -8,6 +8,7 @@ import { HttpService } from "./http.service";
 export class TableService {
   public tables: Table[] = [];
   public currentTable: Table;
+  changed: import("d:/nodeProj/roll_my_dices_client/src/app/classes/changedTable").ChangedTable;
 
   constructor(private httpService: HttpService) {}
 

@@ -1,6 +1,29 @@
 <button mat-raised-button color="primary" (click)="leaveTable()">
   Tisch verlassen
 </button>
+<button
+  mat-icon-button
+  [matMenuTriggerFor]="menu"
+  aria-label="Game menu"
+  class="menu-btn"
+>
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="startGame()">
+    <mat-icon>restart_alt</mat-icon>
+    <span>Spiel neu starten</span>
+  </button>
+  <button mat-menu-item (click)="correct()">
+    <mat-icon>settings_suggest</mat-icon>
+    <span>Korrektur</span>
+  </button>
+  <button mat-menu-item click (click)="blockTable()">
+    <mat-icon>block</mat-icon>
+    <span *ngIf="table.locked">Tisch entsperren</span>
+    <span *ngIf="!table.locked">Tisch sperren</span>
+  </button>
+</mat-menu>
 
 <mat-card class="game-card" *ngIf="myPlayer.won">
   Du hast alle Würfel abgelegt! Warte bis die Runde beendet ist
@@ -142,7 +165,7 @@
         <span *ngIf="!player.diced && !player.won" style="margin-left: 15px"
           >Wir warten!!!</span
         >
-        <span *ngIf="player.won"> ist fertig!!</span>
+        <span *ngIf="player.won">&nbsp;ist fertig!!</span>
         <img src="../../assets/images/dice_cup.png" *ngIf="!player.openCup" />
         <img
           src="../../assets/images/dice_cup_open.png"

@@ -1,0 +1,73 @@
+<h2 mat-dialog-title>Änderungen am Spiel vornehmen</h2>
+<mat-dialog-content class="mat-typography">
+  <mat-card class="game-card">
+    <p>
+      Tisch Würfel: {{ data.table.diceCount }}
+      <mat-icon
+        class="plusMinusIcon"
+        aria-hidden="false"
+        aria-label="plus"
+        (click)="data.table.diceCount = data.table.diceCount + 1"
+        >add</mat-icon
+      ><mat-icon
+        class="plusMinusIcon"
+        aria-hidden="minus"
+        aria-label="minus"
+        (click)="data.table.diceCount = data.table.diceCount - 1"
+        >remove</mat-icon
+      >
+    </p>
+    <p>
+      Tisch min. Spieler: {{ data.table.minplayers }}
+      <mat-icon
+        class="plusMinusIcon"
+        aria-hidden="false"
+        aria-label="plus"
+        (click)="minPlayerChanged(1)"
+        >add</mat-icon
+      ><mat-icon
+        class="plusMinusIcon"
+        aria-hidden="minus"
+        aria-label="minus"
+        (click)="minPlayerChanged(-1)"
+        >remove</mat-icon
+      >
+    </p>
+    <p>
+      Tisch max. Spieler: {{ data.table.maxplayers }}
+      <mat-icon
+        class="plusMinusIcon"
+        aria-hidden="false"
+        aria-label="plus"
+        (click)="maxPlayerChanged(1)"
+        >add</mat-icon
+      ><mat-icon
+        class="plusMinusIcon"
+        aria-hidden="minus"
+        aria-label="minus"
+        (click)="maxPlayerChanged(-1)"
+        >remove</mat-icon
+      >
+    </p>
+    <p *ngFor="let pl of data.players">
+      <span>{{ pl.name }}:</span><br />
+      <span>Spieler Würfel: {{ pl.dices }}</span
+      ><mat-icon
+        class="plusMinusIcon"
+        aria-hidden="false"
+        aria-label="plus"
+        (click)="diceChanged(pl, 1)"
+        >add</mat-icon
+      ><mat-icon
+        class="plusMinusIcon"
+        aria-hidden="minus"
+        aria-label="minus"
+        (click)="diceChanged(pl, -1)"
+        >remove</mat-icon
+      >
+    </p>
+  </mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Okay</button>
+</mat-dialog-actions>

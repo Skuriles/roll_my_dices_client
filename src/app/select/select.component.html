@@ -27,7 +27,18 @@
   (selectionChange)="onTableSelected($event)"
 >
   <mat-list-option *ngFor="let plTable of plTables" [value]="plTable.table">
-    <h3 matLine>{{ plTable.table.name }}</h3>
+    <h3 matLine>
+      {{ plTable.table.name }}
+      <mat-icon
+        style="float: right"
+        aria-hidden="false"
+        aria-label="Tisch löschen"
+        (click)="removeTable($event, plTable.table.id)"
+        *ngIf="!plTable.table.playerIds || plTable.table.playerIds.length == 0"
+        >delete</mat-icon
+      >
+    </h3>
+
     <mat-icon
       aria-hidden="false"
       aria-label="Tisch gesperrt"

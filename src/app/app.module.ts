@@ -23,6 +23,8 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { ConfirmDialogComponent } from "./confirm-dialog/confirm-dialog.component";
 import { MatIconModule } from "@angular/material/icon";
 import { RoundEndDialogComponent } from "./roundend-dialog/roundend-dialog.component";
+import { MatMenuModule } from "@angular/material/menu";
+import { PlayerCorrectionDialogComponent } from "./player-correction-dialog/player-correction-dialog.component";
 
 @NgModule({
   declarations: [
@@ -33,6 +35,7 @@ import { RoundEndDialogComponent } from "./roundend-dialog/roundend-dialog.compo
     CreateTableComponent,
     ConfirmDialogComponent,
     RoundEndDialogComponent,
+    PlayerCorrectionDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -51,6 +54,7 @@ import { RoundEndDialogComponent } from "./roundend-dialog/roundend-dialog.compo
     MatDialogModule,
     MatIconModule,
     MatSelectModule,
+    MatMenuModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

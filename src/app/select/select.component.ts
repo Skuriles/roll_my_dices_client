@@ -32,6 +32,21 @@ export class SelectComponent implements OnInit {
     this.router.navigate(["createTable"]);
   }
 
+  public removeTable(event: Event, tableId: string): void {
+    event.stopPropagation();
+    this.httpService.removeTable(tableId).subscribe((res: boolean) => {
+      if (res) {
+        this.toolService.openSnackBar("Tisch gelöscht", "Okay");
+      } else {
+        this.toolService.openSnackBar(
+          "Tisch nicht gelöscht",
+          "Es sind Spieler am Tisch"
+        );
+      }
+      this.ngOnInit();
+    });
+  }
+
   public onTableSelected(event: MatSelectionListChange): void {
     if (event) {
       const table = event.options[0].value as Table;

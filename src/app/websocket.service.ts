@@ -8,6 +8,7 @@ import { Message } from "@angular/compiler/src/i18n/i18n_ast";
 import { RoundResult } from "./classes/roundResult";
 import { Table } from "./classes/table";
 import { Player } from "./classes/player";
+import { LockResult } from "./classes/lockResult";
 
 @Injectable({
   providedIn: "root",
@@ -39,6 +40,10 @@ export class WebsocketService {
   public playersFinished$ = this.playersFinished.asObservable();
   public gameFinished = new Subject<string>();
   public gameFinished$ = this.gameFinished.asObservable();
+  public tableLocked = new Subject<LockResult>();
+  public tableLocked$ = this.tableLocked.asObservable();
+  public tableCorrection = new Subject<string>();
+  public tableCorrection$ = this.tableCorrection.asObservable();
 
   constructor() {}
 
@@ -103,6 +108,13 @@ export class WebsocketService {
       case "gameFinished":
         this.handleGameFinished(message);
         break;
+      case "tableLocked":
+        this.handleTableLocked(message);
+        break;
+      case "tableCorrection":
+        this.handleTableCorrection(message);
+        break;
+
       default:
         break;
     }
@@ -175,5 +187,15 @@ export class WebsocketService {
 
   private handleGameFinished(message: WsMessage): void {
     this.gameFinished.next(message.params[0] as string);
+  }
+
+  private handleTableLocked(message: WsMessage): void {
+    this.tableLocked.next(
+      new LockResult(message.params[0] as string, message.params[1] as boolean)
+    );
+  }
+
+  private handleTableCorrection(message: WsMessage) {
+    this.tableCorrection.next(message.params[0] as string);
   }
 }
